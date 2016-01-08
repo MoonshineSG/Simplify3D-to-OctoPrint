@@ -1,6 +1,6 @@
-For OSX only. With changes, might be usefull on other platforms as well.
+Developed for OSX. With (minor?) changes, could be usefull on other platforms as well.
 
-Install
+###Install:
 
 ```
 brew install terminal-notifier
@@ -8,6 +8,11 @@ brew install trash
 sudo easy_install python-daemon
 sudo easy_install configparser
 ```
+
+### Usage
+
+`/path/to/toctoprint.py  --location ~/Desktop --editor /usr/local/bin/mate --server http://octoprint.local --key 00000000000000000  --gcode ~/Desktop/gcode.gcode`
+
 
 Except for the parameter --gcode all options can be set in `ini` file
 
@@ -41,7 +46,6 @@ SELECT = False
 #print
 PRINT = False 
 ```
-
 
 Add this to post procesing script in Simplify3D
 
