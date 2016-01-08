@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 
-		error("Called with invalid parameters.")
+		error("Missing server information.")
 		exit(4)
 	
 	DEFAULT_LOCATION = os.path.expanduser(DEFAULT_LOCATION)
