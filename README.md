@@ -44,6 +44,8 @@ EDITOR = /usr/local/bin/mate
 --editor    -   EDITOR
 ```
 
+## Simplify3D
+
 Add this to post procesing script in Simplify3D:
 
 `/path/to/toctoprint.py select trash --location ~/Desktop --editor /usr/local/bin/mate --key 00000000000000000 --server http://octoprint.local --gcode [output_filepath]`
