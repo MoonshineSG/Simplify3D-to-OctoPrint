@@ -1,6 +1,6 @@
 Developed for OSX. With (minor?) changes, could be usefull on other platforms as well.
 
-###Install:
+##Install:
 
 ```
 brew install terminal-notifier
@@ -9,7 +9,7 @@ sudo easy_install python-daemon
 sudo easy_install configparser
 ```
 
-### Usage
+## Usage
 
 `/path/to/toctoprint.py select print trash --location ~/Desktop --editor /usr/local/bin/mate --server http://octoprint.local --key 00000000000000000  --gcode ~/Desktop/gcode.gcode`
 
@@ -17,38 +17,31 @@ Except for the parameter --gcode all options can be set in `ini` file
 
 The commands "select", "print" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
 
+### Settings
+--server & --key - OctoPrint setting
+--location - only gcode files created to this folder will be uploaded
+--editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path
+trash - remove local gcode file after uploading to Octoprint
+select - select file after upload
+print - start print after upload
+
 You can create `.toctoprint.ini` in your home folder with any (or all) following settings or pass as command line parameters
 
 ```
 [default]
-#OctoPrint setting
 SERVER = http://octoprint.local
-#this has to be set either in the `ini` file or passed as command line parameter
 OCTOPRINT_KEY = 00000000000000000000000
-
-#only gcode files created to this folder will be uploaded
 DEFAULT_LOCATION = ~/Desktop
-
-#change this to None if you don't want to open when saving to a different path
 EDITOR = /usr/local/bin/mate
-
-#remove local gcode file after uploading to Octoprint
-TRASH = True
-
-#select file after upload
-SELECT = False 
-
-#start print after upload
-PRINT = False 
 ```
 
-###ini file settings vs command line
+####ini file settings vs command line
 
 ```
-SERVER | --server
-OCTOPRINT_KEY | --key
-DEFAULT_LOCATION | --location 
-EDITOR | --editor
+--server    -   SERVER
+--key       -   OCTOPRINT_KEY
+--location  -   DEFAULT_LOCATION
+--editor    -   EDITOR
 ```
 
 Add this to post procesing script in Simplify3D:
