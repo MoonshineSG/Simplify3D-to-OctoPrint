@@ -5,6 +5,8 @@ Add this to post procesing script in Simplify3D
 
 `"/path/to/toctoprint.py" --gcode "[output_filepath]"`
 
+![screenshot](screenshot_1.png)
+
 Install
 
 ```
