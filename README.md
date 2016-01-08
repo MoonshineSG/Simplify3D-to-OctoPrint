@@ -13,8 +13,9 @@ sudo easy_install configparser
 
 `/path/to/toctoprint.py select print trash --location ~/Desktop --editor /usr/local/bin/mate --server http://octoprint.local --key 00000000000000000  --gcode ~/Desktop/gcode.gcode`
 
-
 Except for the parameter --gcode all options can be set in `ini` file
+
+The commands "select", "print" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
 
 You can create `.toctoprint.ini` in your home folder with any (or all) following settings or pass as command line parameters
 
@@ -48,9 +49,6 @@ SERVER | --server
 OCTOPRINT_KEY | --key
 DEFAULT_LOCATION | --location 
 EDITOR | --editor
-TRASH | trash
-SELECT | select
-PRINT | print
 ```
 
 Add this to post procesing script in Simplify3D:

@@ -60,8 +60,8 @@ if __name__ == '__main__':
 	DEFAULT_LOCATION = "~/Desktop"
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
-	SELECT = False 
-	PRINT = False 
+	SELECT = "select=false" 
+	PRINT = "print=false" 
 	
 	#read settigns from ini file, if available
 	try:
@@ -86,18 +86,6 @@ if __name__ == '__main__':
 				EDITOR = config['default']['EDITOR']
 			except:
 				pass
-			try:
-				TRASH = config['default']['TRASH']
-			except:
-				pass
-			try:
-				SELECT = config['default']['SELECT']
-			except:
-				pass
-			try:
-				PRINT = config['default']['PRINT']
-			except:
-				pass
 	except Exception as e:
 		error("Error reading configuration.\n%s"%e)
 		exit(3)
@@ -112,17 +100,6 @@ if __name__ == '__main__':
 	if args.editor:
 		EDITOR = args.editor
 
-	if SELECT:
-		SELECT = "select=true"
-	else:
-		SELECT = "select=false"
-
-	if PRINT:
-		PRINT = "print=true"
-		SELECT = "select=true"
-	else:
-		PRINT = "print=false"
-		
 	if args.switches != "default":
 		if "print" in args.switches:
 			SELECT = "select=true"
