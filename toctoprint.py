@@ -11,6 +11,9 @@ def notify(message):
 def error(message):
 	call(["/usr/local/bin/terminal-notifier",  "-message" , str(message), "-title" , "Simplify3D" , "-sound" , "Glass.aiff" , "-sender" , "com.Simplify3D.S3D-Software", "-contentImage",  "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns"])
 
+def success(message):
+	call(["/usr/local/bin/terminal-notifier",  "-message" , str(message), "-title" , "Simplify3D" , "-sound" , "Glass.aiff" , "-sender" , "com.Simplify3D.S3D-Software", "-contentImage",  "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/ToolbarFavoritesIcon.icns"])
+
 def trash(filename):
 	call(["/usr/local/bin/trash", filename]) 
 
@@ -20,17 +23,18 @@ def upload(gcode):
 		notify("Uploading '%s' GCODE to Octoprint..."%name)
 		ret = call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", "select=true", "-F", "print=false", "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
 		if ret == 0:
-			notify("Succesfully uploaded '%s' GCODE to Octoprint..."%name)
+			success("Succesfully uploaded '%s' GCODE to Octoprint..."%name)
 		else:
-			error("Failed to upload '%s'..."%gcode)
-	except:
-		failed("Failed to upload '%s'..."%gcode)
+			error("Failed to upload [ue] '%s'... "%gcode)
+	except Exception as e:
+		print (e)
+		failed("Failed to upload [ex] '%s'... "%gcode)
 	finally:
 		TRASH and trash(gcode)
 
 def run(gcode):
 		if not os.path.exists(gcode):
-			error("Failed to upload '%s'.\n\n[file does not exist]"%gcode)
+			error("Failed to upload [fnf] '%s'..."%gcode)
 			exit(2)
 		if gcode.startswith(DEFAULT_LOCATION):
 			upload(gcode)
