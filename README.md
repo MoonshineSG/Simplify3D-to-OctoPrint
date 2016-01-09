@@ -19,10 +19,15 @@ The commands "select", "print" and "trash" can only be specified via the command
 
 ### Settings
 --server & --key - OctoPrint setting
+
 --location - only gcode files created to this folder will be uploaded
+
 --editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path
+
 trash - remove local gcode file after uploading to Octoprint
+
 select - select file after upload
+
 print - start print after upload
 
 You can create `.toctoprint.ini` in your home folder with any (or all) following settings or pass as command line parameters
