@@ -22,7 +22,7 @@ The commands "select", "print" and "trash" can only be specified via the command
 
 --location - only gcode files created to this folder will be uploaded
 
---editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path
+--editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path or if the file name starts with `_`
 
 trash - remove local gcode file after uploading to Octoprint
 

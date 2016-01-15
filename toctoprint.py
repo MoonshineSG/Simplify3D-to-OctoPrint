@@ -118,7 +118,7 @@ if __name__ == '__main__':
 	
 	DEFAULT_LOCATION = os.path.expanduser(DEFAULT_LOCATION)
 
-	if gcode.startswith(DEFAULT_LOCATION):
+	if gcode.startswith(DEFAULT_LOCATION) and not os.path.basename(gcode).startswith("_"):
 		#start the upload in a background process
 		with daemon.DaemonContext(initgroups=False):	
 			upload(gcode)
