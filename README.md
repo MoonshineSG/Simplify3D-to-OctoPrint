@@ -58,6 +58,7 @@ Add this to post procesing script in Simplify3D:
 - settings passed as parameters overwrite the ones in the ini file.
 - [output_filepath] will be replaced by Simplify3D with the full path of the saved GCODE file.
 
+UPDATE: put [output_filepath] between double quotes "[output_filepath]" to allow you use spaces in the file name
 
 ![screenshot](screenshot_1.png)
 
