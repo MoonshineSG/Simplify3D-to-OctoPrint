@@ -4,6 +4,7 @@ import argparse
 from subprocess import call
 import daemon
 import configparser
+import re
 
 def notify(message):
 	call(["/usr/local/bin/terminal-notifier",  "-message" , str(message), "-title" , "Simplify3D" , "-sound" , "default" , "-sender" , "com.Simplify3D.S3D-Software"])
@@ -17,6 +18,22 @@ def success(message):
 def trash(filename):
 	call(["/usr/local/bin/trash", filename]) 
 
+pattern = re.compile(ur'printMaterial,(.*)')
+
+def find_material(gcode):
+	for i, line in enumerate(open(gcode)):
+		matched = pattern.findall(line)
+		if matched:
+			return matched[0]
+
+def get_renamed(gcode):
+	material = find_material(gcode)
+	d = os.path.dirname(gcode)
+	f = os.path.basename(gcode)
+	renamed = os.path.join(d, "%s_%s"%(material,f) )
+	os.rename(gcode, renamed)
+	return renamed
+	
 def upload(gcode):
 	try:
 		name = os.path.basename(gcode)
@@ -39,7 +56,7 @@ if __name__ == '__main__':
 	parser.add_argument('--server')
 	parser.add_argument('--location')
 	parser.add_argument('--editor')
-	parser.add_argument('switches', nargs='*', choices = ["select", "print", "trash", "default"], default="default")
+	parser.add_argument('switches', nargs='*', choices = ["select", "print", "rename", "trash", "default"], default="default")
 
 	try:
 		args = parser.parse_args()
@@ -60,8 +77,10 @@ if __name__ == '__main__':
 	DEFAULT_LOCATION = "~/Desktop"
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
+	RENAME = False
 	SELECT = "select=false" 
-	PRINT = "print=false" 
+	PRINT = "print=false"
+	
 	
 	#read settigns from ini file, if available
 	try:
@@ -111,6 +130,9 @@ if __name__ == '__main__':
 		if "trash" in args.switches:
 			TRASH = True
 
+		if "rename" in args.switches:
+			RENAME = True
+
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 
 		error("Missing server information.")
@@ -120,7 +142,10 @@ if __name__ == '__main__':
 
 	if gcode.startswith(DEFAULT_LOCATION) and not os.path.basename(gcode).startswith("_"):
 		#start the upload in a background process
-		with daemon.DaemonContext(initgroups=False):	
-			upload(gcode)
+		with daemon.DaemonContext(initgroups=False):
+			if RENAME:
+				upload(get_renamed(gcode))
+			else:
+				upload(gcode)
 	else:
 		EDITOR and call([EDITOR, gcode])

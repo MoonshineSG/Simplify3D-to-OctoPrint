@@ -15,7 +15,7 @@ sudo easy_install configparser
 
 Except for the parameter --gcode all options can be set in `ini` file
 
-The commands "select", "print" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
+The commands "select", "print", "rename" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
 
 ### Settings
 --server & --key - OctoPrint setting
@@ -25,6 +25,8 @@ The commands "select", "print" and "trash" can only be specified via the command
 --editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path or if the file name starts with `_`
 
 trash - remove local gcode file after uploading to Octoprint
+
+rename - will add the name of the material (from the selected AUto Configure material name) at the begining of the file name (abc.gcode -> PLA_abc.gcode)
 
 select - select file after upload
 
@@ -53,12 +55,14 @@ EDITOR = /usr/local/bin/mate
 
 Add this to post procesing script in Simplify3D:
 
-`/path/to/toctoprint.py select trash --location ~/Desktop --editor /usr/local/bin/mate --key 00000000000000000 --server http://octoprint.local --gcode [output_filepath]`
+`/path/to/toctoprint.py select rename trash --location ~/Desktop --editor /usr/local/bin/mate --key 00000000000000000 --server http://octoprint.local --gcode "[output_filepath]"`
 
 - settings passed as parameters overwrite the ones in the ini file.
 - [output_filepath] will be replaced by Simplify3D with the full path of the saved GCODE file.
 
 UPDATE: put [output_filepath] between double quotes "[output_filepath]" to allow you use spaces in the file name
+
+UPDATE (28/04/2016): added rename option
 
 ![screenshot](screenshot_1.png)
 
