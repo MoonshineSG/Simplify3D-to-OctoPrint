@@ -9,13 +9,15 @@ sudo easy_install python-daemon
 sudo easy_install configparser
 ```
 
+Needs `/usr/local/bin/gcode_estimate` from https://github.com/MoonshineSG/marlin-estimate/raw/master/gcode_estimate to support print time estimation (OSX El Capitan - 10.11.4)
+
 ## Usage
 
 `/path/to/toctoprint.py select print trash --location ~/Desktop --editor /usr/local/bin/mate --server http://octoprint.local --key 00000000000000000  --gcode ~/Desktop/gcode.gcode`
 
 Except for the parameter --gcode all options can be set in `ini` file
 
-The commands "select", "print", "rename" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
+The commands "select", "print", "rename" , "estimate" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
 
 ### Settings
 --server & --key - OctoPrint setting
@@ -27,6 +29,16 @@ The commands "select", "print", "rename" and "trash" can only be specified via t
 trash - remove local gcode file after uploading to Octoprint
 
 rename - will add the name of the material (from the selected AUto Configure material name) at the begining of the file name (abc.gcode -> PLA_abc.gcode)
+
+estimate - adds
+
+```
+;estimative time to print: 00 hours 26 min 25 sec
+;marlin_estimate:1585.558610
+```
+
+at the end of the gcode file file before uploading it to Octoprint.
+
 
 select - select file after upload
 
@@ -63,6 +75,8 @@ Add this to post procesing script in Simplify3D:
 UPDATE: put [output_filepath] between double quotes "[output_filepath]" to allow you use spaces in the file name
 
 UPDATE (28/04/2016): added rename option
+
+UPDATE (09/05/2016): added estimate option (see https://github.com/MoonshineSG/marlin-estimate as well)
 
 ![screenshot](screenshot_1.png)
 
