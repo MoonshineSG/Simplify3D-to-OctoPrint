@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 import argparse
-from subprocess import call
+from subprocess import call, check_output
 import daemon
 import configparser
 import re
@@ -34,6 +34,12 @@ def get_renamed(gcode):
 	os.rename(gcode, renamed)
 	return renamed
 	
+def estimate(gcode):
+	result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
+	
+	with open(gcode, "a") as myfile:
+		myfile.write(result)
+		
 def upload(gcode):
 	try:
 		name = os.path.basename(gcode)
@@ -56,7 +62,7 @@ if __name__ == '__main__':
 	parser.add_argument('--server')
 	parser.add_argument('--location')
 	parser.add_argument('--editor')
-	parser.add_argument('switches', nargs='*', choices = ["select", "print", "rename", "trash", "default"], default="default")
+	parser.add_argument('switches', nargs='*', choices = ["select", "print", "rename", "estimate", "trash", "default"], default="default")
 
 	try:
 		args = parser.parse_args()
@@ -78,6 +84,7 @@ if __name__ == '__main__':
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
 	RENAME = False
+	ESTIMATE = False
 	SELECT = "select=false" 
 	PRINT = "print=false"
 	
@@ -133,12 +140,18 @@ if __name__ == '__main__':
 		if "rename" in args.switches:
 			RENAME = True
 
+		if "estimate" in args.switches:
+			ESTIMATE = True
+			
+
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 
 		error("Missing server information.")
 		exit(4)
 	
 	DEFAULT_LOCATION = os.path.expanduser(DEFAULT_LOCATION)
+	if ESTIMATE:
+		estimate(gcode)
 
 	if gcode.startswith(DEFAULT_LOCATION) and not os.path.basename(gcode).startswith("_"):
 		#start the upload in a background process
