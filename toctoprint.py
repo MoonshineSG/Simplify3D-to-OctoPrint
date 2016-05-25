@@ -5,6 +5,7 @@ from subprocess import call, check_output
 import daemon
 import configparser
 import re
+import json
 
 def notify(message):
 	call(["/usr/local/bin/terminal-notifier",  "-message" , str(message), "-title" , "Simplify3D" , "-sound" , "default" , "-sender" , "com.Simplify3D.S3D-Software"])
@@ -18,40 +19,97 @@ def success(message):
 def trash(filename):
 	call(["/usr/local/bin/trash", filename]) 
 
-pattern = re.compile(ur'printMaterial,(.*)')
+material_pattern = re.compile(ur'printMaterial,(.*)')
+speed_pattern = re.compile(ur'defaultSpeed,(.*)')
+primary_extruder_pattern = re.compile(ur'primaryExtruder,(.*)')
+extruder_diameter_pattern = re.compile(ur'extruderDiameter,(.*)')
+print_extruders_pattern = re.compile(ur'printExtruders,(.*)')
+layer_height_pattern = re.compile(ur'layerHeight,(.*)')
 
-def find_material(gcode):
+#first line in the custom start gcode set in Simplify3D
+start_code_pattern = re.compile(ur'^; ------------ START GCODE ----------')
+
+estimation_pattern = re.compile(ur';estimative time to print:(.*)$', re.MULTILINE)
+
+estimation = None
+
+def get_info(gcode):
+	material = ""
+	nozzle = ""
+	speed = ""
+	extruders = None
+	primary = None
+
 	for i, line in enumerate(open(gcode)):
-		matched = pattern.findall(line)
+		matched = material_pattern.findall(line)
 		if matched:
-			return matched[0]
+			material = matched[0]
 
+		matched = layer_height_pattern.findall(line)
+		if matched:
+			layer_height =  matched[0]
+
+		matched = print_extruders_pattern.findall(line)
+		if matched:
+			extruder =  matched[0]
+
+		matched = extruder_diameter_pattern.findall(line)
+		if matched:
+			extruders =  matched[0]
+
+		matched = primary_extruder_pattern.findall(line)
+		if matched:
+			primary =  matched[0]
+
+		matched = speed_pattern.findall(line)
+		if matched:
+			speed = matched[0]
+
+		matched = start_code_pattern.findall(line)
+		if matched:			
+			break #end of info section - don't parse the rest of the file
+	return dict(extruder=extruder, nozzle = extruders.split(",")[int(primary)], layer = layer_height, speed = speed, material = material, estimation = estimation)
+	
 def get_renamed(gcode):
-	material = find_material(gcode)
+	MAX_LENGTH = 60
 	d = os.path.dirname(gcode)
-	f = os.path.basename(gcode)
-	renamed = os.path.join(d, "%s_%s"%(material,f) )
-	os.rename(gcode, renamed)
-	return renamed
+	n, e = os.path.splitext( os.path.basename(gcode) )
+	if len(n) > MAX_LENGTH:
+		renamed = os.path.join(d, n[:MAX_LENGTH]+"  "+e)
+		os.rename(gcode, renamed)
+		return renamed
+	else:
+		return gcode
 	
 def estimate(gcode):
+	global estimation
 	result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
-	
+	estimation = estimation_pattern.findall(result)[0]
 	with open(gcode, "a") as myfile:
 		myfile.write(result)
 		
 def upload(gcode):
 	try:
 		name = os.path.basename(gcode)
-		notify("Uploading '%s' GCODE to Octoprint..."%name)
-		ret = call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", SELECT, "-F", PRINT, "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
+		notify("Uploading '%s' ..."%name)
+		
+		USER_DATA = "userdata="+json.dumps(get_info(gcode))
+		try:
+			call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-X", "DELETE",  "{0}/api/files/local/{1}".format(SERVER, name)])
+		except:
+			pass
+		ret = call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", SELECT, "-F", PRINT, "-F", USER_DATA, "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
+		
 		if ret == 0:
-			success("Succesfully uploaded '%s' GCODE to Octoprint..."%name)
+			msg = """Upload succesfull...
+Estimate:%s
+			"""%estimation
+			success(msg)
 		else:
-			error("Failed to upload [ue] '%s'... "%gcode)
+			error("Failed to upload [UE] '%s'... "%gcode)
 	except Exception as e:
-		print (e)
-		failed("Failed to upload [ex] '%s'... "%gcode)
+
+		error("Failed to upload [EX] '%s'... "%gcode)
 	finally:
 		TRASH and trash(gcode)
 		
@@ -62,7 +120,7 @@ if __name__ == '__main__':
 	parser.add_argument('--server')
 	parser.add_argument('--location')
 	parser.add_argument('--editor')
-	parser.add_argument('switches', nargs='*', choices = ["select", "print", "rename", "estimate", "trash", "default"], default="default")
+	parser.add_argument('switches', nargs='*', choices = ["select", "print", "estimate", "trash", "default"], default="default")
 
 	try:
 		args = parser.parse_args()
@@ -83,7 +141,6 @@ if __name__ == '__main__':
 	DEFAULT_LOCATION = "~/Desktop"
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
-	RENAME = False
 	ESTIMATE = False
 	SELECT = "select=false" 
 	PRINT = "print=false"
@@ -137,12 +194,8 @@ if __name__ == '__main__':
 		if "trash" in args.switches:
 			TRASH = True
 
-		if "rename" in args.switches:
-			RENAME = True
-
 		if "estimate" in args.switches:
 			ESTIMATE = True
-			
 
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 
@@ -154,11 +207,10 @@ if __name__ == '__main__':
 		estimate(gcode)
 
 	if gcode.startswith(DEFAULT_LOCATION) and not os.path.basename(gcode).startswith("_"):
+		if os.path.basename(gcode).startswith(" "):
+			call([EDITOR, "-w",  gcode])
 		#start the upload in a background process
 		with daemon.DaemonContext(initgroups=False):
-			if RENAME:
-				upload(get_renamed(gcode))
-			else:
-				upload(gcode)
+			upload( get_renamed(gcode) )
 	else:
 		EDITOR and call([EDITOR, gcode])
