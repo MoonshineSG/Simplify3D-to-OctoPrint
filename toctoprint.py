@@ -25,20 +25,23 @@ primary_extruder_pattern = re.compile(ur'primaryExtruder,(.*)')
 extruder_diameter_pattern = re.compile(ur'extruderDiameter,(.*)')
 print_extruders_pattern = re.compile(ur'printExtruders,(.*)')
 layer_height_pattern = re.compile(ur'layerHeight,(.*)')
+extrusion_width_pattern = re.compile(ur'extruderWidth,(.*)')
 
 #first line in the custom start gcode set in Simplify3D
 start_code_pattern = re.compile(ur'^; ------------ START GCODE ----------')
 
 estimation_pattern = re.compile(ur';estimative time to print:(.*)$', re.MULTILINE)
 
-estimation = None
+estimation = "unknown"
 
 def get_info(gcode):
 	material = ""
-	nozzle = ""
+	layer_height = ""
+	extruders_width = ""
+	extruder = ""
+	extruders = ""
+	primary = 0
 	speed = ""
-	extruders = None
-	primary = None
 
 	for i, line in enumerate(open(gcode)):
 		matched = material_pattern.findall(line)
@@ -48,6 +51,10 @@ def get_info(gcode):
 		matched = layer_height_pattern.findall(line)
 		if matched:
 			layer_height =  matched[0]
+
+		matched = extrusion_width_pattern.findall(line)
+		if matched:
+			extruders_width =  matched[0]
 
 		matched = print_extruders_pattern.findall(line)
 		if matched:
@@ -68,7 +75,15 @@ def get_info(gcode):
 		matched = start_code_pattern.findall(line)
 		if matched:			
 			break #end of info section - don't parse the rest of the file
-	return dict(extruder=extruder, nozzle = extruders.split(",")[int(primary)], layer = layer_height, speed = speed, material = material, estimation = estimation)
+
+	estimate = "{'human':'', 'machine':0}"
+	if ESTIMATE:
+		global estimation
+		result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
+		estimate = json.loads(result)
+		estimation = estimate.get("human")
+	
+	return dict(extruder=extruder, nozzle = extruders.split(",")[int(primary)], layer = layer_height, width = extruders_width.split(",")[int(primary)], speed = speed, material = material, estimation = estimate)
 	
 def get_renamed(gcode):
 	MAX_LENGTH = 60
@@ -80,13 +95,6 @@ def get_renamed(gcode):
 		return renamed
 	else:
 		return gcode
-	
-def estimate(gcode):
-	global estimation
-	result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
-	estimation = estimation_pattern.findall(result)[0]
-	with open(gcode, "a") as myfile:
-		myfile.write(result)
 		
 def upload(gcode):
 	try:
@@ -94,6 +102,7 @@ def upload(gcode):
 		notify("Uploading '%s' ..."%name)
 		
 		USER_DATA = "userdata="+json.dumps(get_info(gcode))
+
 		try:
 			call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-X", "DELETE",  "{0}/api/files/local/{1}".format(SERVER, name)])
 		except:
@@ -108,7 +117,6 @@ Estimate:%s
 		else:
 			error("Failed to upload [UE] '%s'... "%gcode)
 	except Exception as e:
-
 		error("Failed to upload [EX] '%s'... "%gcode)
 	finally:
 		TRASH and trash(gcode)
@@ -203,8 +211,6 @@ if __name__ == '__main__':
 		exit(4)
 	
 	DEFAULT_LOCATION = os.path.expanduser(DEFAULT_LOCATION)
-	if ESTIMATE:
-		estimate(gcode)
 
 	if gcode.startswith(DEFAULT_LOCATION) and not os.path.basename(gcode).startswith("_"):
 		if os.path.basename(gcode).startswith(" "):
