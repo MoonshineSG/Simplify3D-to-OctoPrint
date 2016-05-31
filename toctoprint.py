@@ -23,22 +23,20 @@ material_pattern = re.compile(ur'printMaterial,(.*)')
 speed_pattern = re.compile(ur'defaultSpeed,(.*)')
 primary_extruder_pattern = re.compile(ur'primaryExtruder,(.*)')
 extruder_diameter_pattern = re.compile(ur'extruderDiameter,(.*)')
-print_extruders_pattern = re.compile(ur'printExtruders,(.*)')
+hotend_pattern = re.compile(ur'printExtruders,(.*)')
 layer_height_pattern = re.compile(ur'layerHeight,(.*)')
 extrusion_width_pattern = re.compile(ur'extruderWidth,(.*)')
 
 #first line in the custom start gcode set in Simplify3D
 start_code_pattern = re.compile(ur'^; ------------ START GCODE ----------')
 
-estimation_pattern = re.compile(ur';estimative time to print:(.*)$', re.MULTILINE)
-
-estimation = "unknown"
+estimate = "unknown"
 
 def get_info(gcode):
 	material = ""
 	layer_height = ""
 	extruders_width = ""
-	extruder = ""
+	hotend = ""
 	extruders = ""
 	primary = 0
 	speed = ""
@@ -56,9 +54,9 @@ def get_info(gcode):
 		if matched:
 			extruders_width =  matched[0]
 
-		matched = print_extruders_pattern.findall(line)
+		matched = hotend_pattern.findall(line)
 		if matched:
-			extruder =  matched[0]
+			hotend =  re.sub(r'[\d\.]*', '', matched[0]) 
 
 		matched = extruder_diameter_pattern.findall(line)
 		if matched:
@@ -78,12 +76,12 @@ def get_info(gcode):
 
 	estimate = "{'human':'', 'machine':0}"
 	if ESTIMATE:
-		global estimation
+		global estimate
 		result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
-		estimate = json.loads(result)
-		estimation = estimate.get("human")
+		estimation = json.loads(result)
+		estimate = estimation.get("human")
 	
-	return dict(extruder=extruder, nozzle = extruders.split(",")[int(primary)], layer = layer_height, width = extruders_width.split(",")[int(primary)], speed = speed, material = material, estimation = estimate)
+	return dict(hotend=hotend, nozzle = extruders.split(",")[int(primary)], layer = layer_height, width = extruders_width.split(",")[int(primary)], speed = speed, material = material, estimation = estimation)
 	
 def get_renamed(gcode):
 	MAX_LENGTH = 60
@@ -97,8 +95,8 @@ def get_renamed(gcode):
 		return gcode
 		
 def upload(gcode):
-	try:
-		name = os.path.basename(gcode)
+	try:		
+		name = os.path.basename(gcode).replace(" ", "_")
 		notify("Uploading '%s' ..."%name)
 		
 		USER_DATA = "userdata="+json.dumps(get_info(gcode))
@@ -111,8 +109,8 @@ def upload(gcode):
 		
 		if ret == 0:
 			msg = """Upload succesfull...
-Estimate:%s
-			"""%estimation
+Estimate : %s
+			"""%estimate
 			success(msg)
 		else:
 			error("Failed to upload [UE] '%s'... "%gcode)

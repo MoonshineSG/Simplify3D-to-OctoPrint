@@ -30,15 +30,7 @@ trash - remove local gcode file after uploading to Octoprint
 
 rename - will add the name of the material (from the selected AUto Configure material name) at the begining of the file name (abc.gcode -> PLA_abc.gcode)
 
-estimate - adds
-
-```
-;estimative time to print: 00 hours 26 min 25 sec
-;marlin_estimate:1585.558610
-```
-
-at the end of the gcode file file before uploading it to Octoprint.
-
+estimate - adds estimation to the meta data (together with other slicer info)
 
 select - select file after upload
 
@@ -77,6 +69,8 @@ UPDATE: put [output_filepath] between double quotes "[output_filepath]" to allow
 UPDATE (28/04/2016): added rename option
 
 UPDATE (09/05/2016): added estimate option (see https://github.com/MoonshineSG/marlin-estimate as well)
+
+UPDATE (31/05/2016): changed estimation format to meta data
 
 ![screenshot](screenshot_1.png)
 
