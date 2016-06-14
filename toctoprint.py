@@ -74,7 +74,7 @@ def get_info(gcode):
 		if matched:			
 			break #end of info section - don't parse the rest of the file
 
-	estimate = "{'human':'', 'machine':0}"
+	estimation = "{'human':'', 'machine':0}"
 	if ESTIMATE:
 		global estimate
 		result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
