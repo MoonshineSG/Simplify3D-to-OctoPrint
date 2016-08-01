@@ -9,15 +9,13 @@ sudo easy_install python-daemon
 sudo easy_install configparser
 ```
 
-Needs `/usr/local/bin/gcode_estimate` from https://github.com/MoonshineSG/marlin-estimate/raw/master/gcode_estimate to support print time estimation (OSX El Capitan - 10.11.4)
-
 ## Usage
 
 `/path/to/toctoprint.py select print trash --location ~/Desktop --editor /usr/local/bin/mate --server http://octoprint.local --key 00000000000000000  --gcode ~/Desktop/gcode.gcode`
 
 Except for the parameter --gcode all options can be set in `ini` file
 
-The commands "select", "print", "rename" , "estimate" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
+The commands "select", "print", "rename" and "trash" can only be specified via the command line. If you specify "print" you don't need to specify "select"
 
 ### Settings
 --server & --key - OctoPrint setting
@@ -29,8 +27,6 @@ The commands "select", "print", "rename" , "estimate" and "trash" can only be sp
 trash - remove local gcode file after uploading to Octoprint
 
 rename - will add the name of the material (from the selected AUto Configure material name) at the begining of the file name (abc.gcode -> PLA_abc.gcode)
-
-estimate - adds estimation to the meta data (together with other slicer info)
 
 select - select file after upload
 
@@ -72,6 +68,9 @@ UPDATE (09/05/2016): added estimate option (see https://github.com/MoonshineSG/m
 
 UPDATE (31/05/2016): changed estimation format to meta data
 
+UPDATE (01/08/2016): removed estimate option (OctoPrint estimates improved to acceptable levels)
+
+
 ![screenshot](screenshot_1.png)
 
 
@@ -93,12 +92,10 @@ Once the code file gets generated, Simplify3D executes the postprocessing sequen
 ```
 {REPLACE "; layer" "M808 zchange Layer"} 
 {REPLACE " Z = " " "}
-/full_path_to/toctoprint.py  trash select estimate --gcode "[output_filepath]"
+/full_path_to/toctoprint.py  trash select  --gcode "[output_filepath]"
 ```
 
 See https://github.com/MoonshineSG/Simplify3D-to-OctoPrint
-
-Estimations provided by https://github.com/MoonshineSG/marlin-estimate. _Currently not very accurate._
 
 ## RaspberryPi - the brain 
 

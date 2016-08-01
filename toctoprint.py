@@ -30,8 +30,6 @@ extrusion_width_pattern = re.compile(ur'extruderWidth,(.*)')
 #first line in the custom start gcode set in Simplify3D
 start_code_pattern = re.compile(ur'^; ------------ START GCODE ----------')
 
-estimate = "unknown"
-
 def get_info(gcode):
 	material = ""
 	layer_height = ""
@@ -73,15 +71,8 @@ def get_info(gcode):
 		matched = start_code_pattern.findall(line)
 		if matched:			
 			break #end of info section - don't parse the rest of the file
-
-	estimation = "{'human':'', 'machine':0}"
-	if ESTIMATE:
-		global estimate
-		result = check_output(["/usr/local/bin/gcode_estimate", str(gcode)]) 
-		estimation = json.loads(result)
-		estimate = estimation.get("human")
 	
-	return dict(hotend=hotend, nozzle = extruders.split(",")[int(primary)], layer = layer_height, width = extruders_width.split(",")[int(primary)], speed = speed, material = material, estimation = estimation)
+	return dict(hotend=hotend, nozzle = extruders.split(",")[int(primary)], layer = layer_height, width = extruders_width.split(",")[int(primary)], speed = speed, material = material)
 	
 def get_renamed(gcode):
 	MAX_LENGTH = 60
@@ -108,14 +99,17 @@ def upload(gcode):
 		ret = call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", SELECT, "-F", PRINT, "-F", USER_DATA, "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
 		
 		if ret == 0:
-			msg = """Upload succesfull...
-Estimate : %s
-			"""%estimate
-			success(msg)
+			success("""Upload succesfull...
+%s
+			"""%gcode)
 		else:
-			error("Failed to upload [UE] '%s'... "%gcode)
+			error("""Failed to upload [UE]...
+%s
+			"""%gcode)
 	except Exception as e:
-		error("Failed to upload [EX] '%s'... "%gcode)
+		error("""Failed to upload [EX]...
+%s
+		"""%gcode)
 	finally:
 		TRASH and trash(gcode)
 		
@@ -126,7 +120,7 @@ if __name__ == '__main__':
 	parser.add_argument('--server')
 	parser.add_argument('--location')
 	parser.add_argument('--editor')
-	parser.add_argument('switches', nargs='*', choices = ["select", "print", "estimate", "trash", "default"], default="default")
+	parser.add_argument('switches', nargs='*', choices = ["select", "print", "trash", "default"], default="default")
 
 	try:
 		args = parser.parse_args()
@@ -138,7 +132,8 @@ if __name__ == '__main__':
 	#first thing first...
 	gcode = os.path.expanduser(args.gcode)
 	if not os.path.exists(gcode):
-		error("Failed to upload [fnf] '%s'..."%gcode)
+		error("""Failed to upload [fnf]...
+%s"""%gcode)
 		exit(2)
 
 	#default settings
@@ -147,7 +142,6 @@ if __name__ == '__main__':
 	DEFAULT_LOCATION = "~/Desktop"
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
-	ESTIMATE = False
 	SELECT = "select=false" 
 	PRINT = "print=false"
 	
@@ -199,9 +193,6 @@ if __name__ == '__main__':
 
 		if "trash" in args.switches:
 			TRASH = True
-
-		if "estimate" in args.switches:
-			ESTIMATE = True
 
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 
