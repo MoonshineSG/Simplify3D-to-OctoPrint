@@ -93,15 +93,15 @@ def upload(gcode):
 		USER_DATA = "userdata="+json.dumps(get_info(gcode))
 
 		try:
-			call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-X", "DELETE",  "{0}/api/files/local/{1}".format(SERVER, name)])
+			call(["/usr/bin/curl", INSECURE, "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-X", "DELETE",  "{0}/api/files/local/{1}".format(SERVER, name)])
 		except:
 			pass
-		ret = call(["/usr/bin/curl", "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", SELECT, "-F", PRINT, "-F", USER_DATA, "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
+		ret = call(["/usr/bin/curl", INSECURE, "--connect-timeout", "15" ,"-H", "Content-Type: multipart/form-data", "-H", "X-Api-Key: {0}".format(OCTOPRINT_KEY), "-F", SELECT, "-F", PRINT, "-F", USER_DATA, "-F", "file=@{0}".format(gcode), "{0}/api/files/local".format(SERVER)])
 		
 		if ret == 0:
 			success("""Upload succesfull...
 %s
-			"""%gcode)
+			"""%os.path.basename(gcode))
 		else:
 			error("""Failed to upload [UE]...
 %s
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 	parser.add_argument('--server')
 	parser.add_argument('--location')
 	parser.add_argument('--editor')
-	parser.add_argument('switches', nargs='*', choices = ["select", "print", "trash", "default"], default="default")
+	parser.add_argument('switches', nargs='*', choices = ["select", "print", "trash", "insecure", "default"], default="default")
 
 	try:
 		args = parser.parse_args()
@@ -142,6 +142,7 @@ if __name__ == '__main__':
 	DEFAULT_LOCATION = "~/Desktop"
 	EDITOR = "/usr/local/bin/mate"
 	TRASH = False
+	INSECURE = ""
 	SELECT = "select=false" 
 	PRINT = "print=false"
 	
@@ -193,6 +194,9 @@ if __name__ == '__main__':
 
 		if "trash" in args.switches:
 			TRASH = True
+
+		if "insecure" in args.switches:
+			INSECURE = "--insecure"
 
 	#can't go on without these 2
 	if OCTOPRINT_KEY == None or SERVER == None : 

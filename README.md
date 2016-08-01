@@ -32,6 +32,8 @@ select - select file after upload
 
 print - start print after upload
 
+insecure - don't verify SSL certificate (for self signed SSL) - use carefully!!
+
 You can create `.toctoprint.ini` in your home folder with any (or all) following settings or pass as command line parameters
 
 ```
@@ -69,6 +71,8 @@ UPDATE (09/05/2016): added estimate option (see https://github.com/MoonshineSG/m
 UPDATE (31/05/2016): changed estimation format to meta data
 
 UPDATE (01/08/2016): removed estimate option (OctoPrint estimates improved to acceptable levels)
+
+UPDATE (01/08/2016): added "insecure" mode for self signed SSL
 
 
 ![screenshot](screenshot_1.png)
