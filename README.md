@@ -20,8 +20,6 @@ The commands "select", "print", "rename" and "trash" can only be specified via t
 ### Settings
 --server & --key - OctoPrint setting
 
---location - only gcode files created to this folder will be uploaded
-
 --editor - the editor used for opening files not placed in the default folder. change this to None if you don't want to open when saving to a different path or if the file name starts with `_`
 
 trash - remove local gcode file after uploading to Octoprint
@@ -40,7 +38,6 @@ You can create `.toctoprint.ini` in your home folder with any (or all) following
 [default]
 SERVER = http://octoprint.local
 OCTOPRINT_KEY = 00000000000000000000000
-DEFAULT_LOCATION = ~/Desktop
 EDITOR = /usr/local/bin/mate
 ```
 
@@ -49,7 +46,6 @@ EDITOR = /usr/local/bin/mate
 ```
 --server    -   SERVER
 --key       -   OCTOPRINT_KEY
---location  -   DEFAULT_LOCATION
 --editor    -   EDITOR
 ```
 
@@ -73,6 +69,8 @@ UPDATE (31/05/2016): changed estimation format to meta data
 UPDATE (01/08/2016): removed estimate option (OctoPrint estimates improved to acceptable levels)
 
 UPDATE (01/08/2016): added "insecure" mode for self signed SSL
+
+UPDATE (13/10/2016): removed LOCATION and moved all processing to background
 
 
 ![screenshot](screenshot_1.png)
