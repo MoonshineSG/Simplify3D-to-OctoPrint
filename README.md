@@ -1,6 +1,6 @@
 Developed for OSX. With (minor?) changes, could be usefull on other platforms as well.
 
-##Install:
+## Install:
 
 ```
 brew install terminal-notifier
@@ -41,7 +41,7 @@ OCTOPRINT_KEY = 00000000000000000000000
 EDITOR = /usr/local/bin/mate
 ```
 
-####ini file settings vs command line
+#### ini file settings vs command line
 
 ```
 --server    -   SERVER
@@ -74,4 +74,9 @@ UPDATE (13/10/2016): removed LOCATION and moved all processing to background
 
 
 ![screenshot](screenshot_1.png)
+
+
+### Donate
+
+Accepting [beer tips](https://paypal.me/ovidiuhossu)...
 
